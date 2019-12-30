@@ -6,7 +6,7 @@
  * font: see http://freedesktop.org/software/fontconfig/fontconfig-user.html
  */
 static char *font = "mono:pixelsize=16:antialias=true:autohint=true";
-static char *font2[] = {"DejaVu Sans Mono for Powerline:pixelsize=16:antialias=true:autohint=true";}
+static char *font2[] = {"DejaVu Sans Mono for Powerline:pixelsize=16:antialias=true:autohint=true"};
 static int borderpx = 2;
 
 /*
@@ -200,7 +200,7 @@ static MouseShortcut mshortcuts[] = {
 
 /* Internal keyboard shortcuts. */
 #define MODKEY Mod1Mask
-#define TERMMOD (Mod1Mask|ShiftMask)
+#define TERMMOD (ControlMask|ShiftMask)
 
 MouseKey mkeys[] = {
 	/* button               mask            function        argument */
