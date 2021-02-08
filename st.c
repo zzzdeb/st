@@ -127,6 +127,7 @@ typedef struct {
 typedef struct {
 	int row;      /* nb row */
 	int col;      /* nb col */
+	int maxcol;
 	Line *line;   /* screen */
 	Line *alt;    /* alternate screen */
 	Line hist[HISTSIZE]; /* history buffer */
@@ -436,7 +437,7 @@ tlinelen(int y)
 int
 tlinehistlen(int y)
 {
-	int i = term.col;
+	int i = term.maxcol;
 
 	if (TLINE_HIST(y)[i - 1].mode & ATTR_WRAP)
 		return i;
@@ -1052,12 +1053,13 @@ treset(void)
 		tclearregion(0, 0, term.col-1, term.row-1);
 		tswapscreen();
 	}
+	term.maxcol = 0;
 }
 
 void
 tnew(int col, int row)
 {
-	term = (Term){ .c = { .attr = { .fg = defaultfg, .bg = defaultbg } } };
+	term = (Term){ .c = { .attr = { .fg = defaultfg, .bg = defaultbg } } , .maxcol = 0 };
 	tresize(col, row);
 	treset();
 }
@@ -2618,6 +2620,10 @@ twrite(const char *buf, int buflen, int show_ctrl)
 void
 tresize(int col, int row)
 {
+	int oldmaxcol = term.maxcol;
+	if (col > term.maxcol){
+		term.maxcol = col;
+	}
 	int i, j;
 	int minrow = MIN(row, term.row);
 	int mincol = MIN(col, term.col);
@@ -2659,8 +2665,13 @@ tresize(int col, int row)
 	term.tabs = xrealloc(term.tabs, col * sizeof(*term.tabs));
 
 	for (i = 0; i < HISTSIZE; i++) {
-		term.hist[i] = xrealloc(term.hist[i], col * sizeof(Glyph));
-		for (j = mincol; j < col; j++) {
+		// term.hist[i] = xrealloc(term.hist[i], col * sizeof(Glyph));
+		// for (j = mincol; j < col; j++) {
+		// 	term.hist[i][j] = term.c.attr;
+		// 	term.hist[i][j].u = ' ';
+		// }
+		term.hist[i] = xrealloc(term.hist[i], term.maxcol * sizeof(Glyph));
+		for (j = oldmaxcol; j < term.maxcol; j++) {
 			term.hist[i][j] = term.c.attr;
 			term.hist[i][j].u = ' ';
 		}
@@ -2668,14 +2679,14 @@ tresize(int col, int row)
 
 	/* resize each row to new width, zero-pad if needed */
 	for (i = 0; i < minrow; i++) {
-		term.line[i] = xrealloc(term.line[i], col * sizeof(Glyph));
-		term.alt[i]  = xrealloc(term.alt[i],  col * sizeof(Glyph));
+		term.line[i] = xrealloc(term.line[i], term.maxcol * sizeof(Glyph));
+		term.alt[i]  = xrealloc(term.alt[i],  term.maxcol * sizeof(Glyph));
 	}
 
 	/* allocate any new rows */
 	for (/* i = minrow */; i < row; i++) {
-		term.line[i] = xmalloc(col * sizeof(Glyph));
-		term.alt[i] = xmalloc(col * sizeof(Glyph));
+		term.line[i] = xmalloc(term.maxcol * sizeof(Glyph));
+		term.alt[i] = xmalloc(term.maxcol * sizeof(Glyph));
 	}
 	if (col > term.col) {
 		bp = term.tabs + term.col;
@@ -2684,7 +2695,7 @@ tresize(int col, int row)
 		while (--bp > term.tabs && !*bp)
 			/* nothing */ ;
 		for (bp += tabspaces; bp < term.tabs + col; bp += tabspaces)
-			*bp = 1;
+		 	*bp = 1;
 	}
 	/* update terminal size */
 	term.col = col;
@@ -2696,11 +2707,11 @@ tresize(int col, int row)
 	/* Clearing both screens (it makes dirty all lines) */
 	c = term.c;
 	for (i = 0; i < 2; i++) {
-		if (mincol < col && 0 < minrow) {
-			tclearregion(mincol, 0, col - 1, minrow - 1);
+		if (oldmaxcol < term.maxcol && 0 < minrow) {
+			tclearregion(oldmaxcol, 0, term.maxcol - 1, minrow - 1);
 		}
 		if (0 < col && minrow < row) {
-			tclearregion(0, minrow, col - 1, row - 1);
+			tclearregion(0, minrow, term.maxcol - 1, row - 1);
 		}
 		tswapscreen();
 		tcursor(CURSOR_LOAD);
