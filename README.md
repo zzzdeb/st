@@ -56,7 +56,7 @@ This happens because the remote system doesn't have the `st-256color` terminfo e
 
 ```
 make terminfo
-scp -r terminfo user@remote:~/.terminfo
+scp -r terminfo <user>@<remote-host>:~/.terminfo
 ```
 
 Alternatively, you can install the terminfo directly on the remote system by copying `st.info` and running:

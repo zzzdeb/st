@@ -63,6 +63,6 @@ terminfo: st.info
 	tic -o terminfo -sx st.info
 	@echo "Terminfo compiled to ./terminfo directory"
 	@echo "To use on remote systems, copy the terminfo directory to the remote host:"
-	@echo "  scp -r terminfo user@remote:~/.terminfo"
+	@echo "  scp -r terminfo <user>@<remote-host>:~/.terminfo"
 
 .PHONY: all options clean dist install uninstall terminfo
