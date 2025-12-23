@@ -31,6 +31,7 @@ st: $(OBJ)
 
 clean:
 	rm -f st $(OBJ) st-$(VERSION).tar.gz
+	rm -rf terminfo
 
 dist: clean
 	mkdir -p st-$(VERSION)
@@ -57,4 +58,11 @@ uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/st-copyout
 	rm -f $(DESTDIR)$(MANPREFIX)/man1/st.1
 
-.PHONY: all options clean dist install uninstall
+terminfo: st.info
+	@mkdir -p terminfo
+	tic -o terminfo -sx st.info
+	@echo "Terminfo compiled to ./terminfo directory"
+	@echo "To use on remote systems, copy the terminfo directory to the remote host:"
+	@echo "  scp -r terminfo user@remote:~/.terminfo"
+
+.PHONY: all options clean dist install uninstall terminfo
