@@ -45,6 +45,25 @@ On OpenBSD, be sure to edit `config.mk` first and remove `-lrt` from the `$LIBS`
 
 Be sure to have a composite manager (`xcompmgr`, `compton`, etc.) running if you want transparency.
 
+## Using st on remote systems via SSH
+
+When connecting to remote systems via SSH, you may encounter the error:
+```
+Error opening terminal: st-256color.
+```
+
+This happens because the remote system doesn't have the `st-256color` terminfo entry. To fix this, you need to copy the terminfo to the remote system:
+
+```
+make terminfo
+scp -r terminfo <user>@<remote-host>:~/.terminfo
+```
+
+Alternatively, you can install the terminfo directly on the remote system by copying `st.info` and running:
+```
+tic -sx st.info
+```
+
 ## How to configure dynamically with Xresources
 
 For many key variables, this build of `st` will look for X settings set in either `~/.Xdefaults` or `~/.Xresources`. You must run `xrdb` on one of these files to load the settings.
